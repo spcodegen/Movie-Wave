@@ -74,4 +74,72 @@ class MoviesService {
       throw Exception("Error searchin movie:$error");
     }
   }
+
+  //Similar Movies
+  //https://api.themoviedb.org/3/movie/950/similar?api_key=a8d4032665d01f0c0b9a8a5ab7e61ccc
+  Future<List<Movie>> fetchSimilarMovies(int moviedId) async {
+    try {
+      final responce = await http.get(Uri.parse(
+          "https://api.themoviedb.org/3/movie/$moviedId/similar?api_key=$_apiKey"));
+
+      if (responce.statusCode == 200) {
+        final data = json.decode(responce.body);
+        final List<dynamic> results = data["results"];
+
+        return results.map((movieData) => Movie.fromJson(movieData)).toList();
+      } else {
+        throw Exception("Faild to fetch similar movies");
+      }
+    } catch (error) {
+      print("Faild to fetch similar movies:$error");
+      return [];
+    }
+  }
+
+  //rocomended Movies
+  //https://api.themoviedb.org/3/movie/950/recommendations?api_key=a8d4032665d01f0c0b9a8a5ab7e61ccc
+  Future<List<Movie>> fetchRecomendedMovies(int moviedId) async {
+    try {
+      final responce = await http.get(Uri.parse(
+          "https://api.themoviedb.org/3/movie/$moviedId/recommendations?api_key=$_apiKey"));
+
+      if (responce.statusCode == 200) {
+        final data = json.decode(responce.body);
+        final List<dynamic> results = data["results"];
+
+        return results.map((movieData) => Movie.fromJson(movieData)).toList();
+      } else {
+        throw Exception("Faild to fetch recomended movies");
+      }
+    } catch (error) {
+      print("Faild to fetch recomended movies:$error");
+      return [];
+    }
+  }
+
+  //Fetch images by movie ID
+  //https://api.themoviedb.org/3/movie/950/images?api_key=a8d4032665d01f0c0b9a8a5ab7e61ccc
+  Future<List<String>> fetchImagesFromMovieId(int movieId) async {
+    try {
+      final response = await http.get(Uri.parse(
+          'https://api.themoviedb.org/3/movie/$movieId/images?api_key=$_apiKey'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> backdrops = data['backdrops'];
+
+        // Extract file paths and return the first 10 images
+        return backdrops
+            .take(10)
+            .map((imageData) =>
+                'https://image.tmdb.org/t/p/w500${imageData['file_path']}')
+            .toList();
+      } else {
+        throw Exception('Failed to load images');
+      }
+    } catch (error) {
+      print('Error fetching images: $error');
+      return [];
+    }
+  }
 }
